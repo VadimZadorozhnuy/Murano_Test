@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<script src="jquery-1.11.3.min.js"></script>
+</head>
+
+<body>
+	<style>
+	body{
+		background-color: #ddd;
+	}
+	.oldVal{
+		color: red;
+	}
+	.newVal{
+		color:green;
+	}
+	</style>
+	<iframe src="topFrame.htm" name="topFrame" marginWidth="0" height="30px" marginHeight="0" noResize="" scrolling="no" width="100%" frameborder="0">
+	</iframe>
+	<iframe id="" src="mainForm.htm" name="SFOMainFrame" width="100%" style="height: 500px;"  frameborder="0"></iframe>
+	<button id="FillPage">Fill page</button>
+	
+	<div>
+		<p>Changes log</p>
+		<p id="trackedChanges" style="display: block"></p>
+
+	</div>
+	<!--<script type="text/javascript" src="myJS.js"></script>-->
+	<script type="text/javascript">
+	var items = {
+		InsuredName: 'Perfect customer',
+		DBA: 'PERF Co',
+		EffectiveDate: '05/05/2013',
+		YIB: '4',
+		Entity: 'corporation',
+		FEIN: '987654321',
+		Email: 'perfect@perfect.com',
+			ExpMod: '0.98', //could be empty
+			locations: [{
+				locNum: '1',
+				Street: '111 Main Str',
+				City: 'Los Angeles',
+				State: 'CA',
+				Zip: '90012 - 1234'
+			},
+			{
+				locNum: '2',
+				Street: '222 Main Str',
+				City: 'Los Angeles',
+				State: 'CA',
+				Zip: '90012'
+			},
+			{
+				locNum: '3',
+				Street: '333 Main Str',
+				City: 'Los Angeles',
+				State: 'CA',
+				Zip: '90012'
+			}
+			]
+		};
+
+	//------------------------------//
+
+	$("#FillPage").on("click", function(){
+		var iframe = window.frames['SFOMainFrame'].document;
+		iframe.getElementById('InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd=\'Insured\'].GeneralPartyInfo.NameInfo.CommlName.CommercialName').value=items.InsuredName;
+		iframe.getElementById('InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd=\'Insured\'].GeneralPartyInfo.NameInfo.CommlName.SupplementaryNameInfo[SupplementaryNameCd=\'DBA\'].SupplementaryName').value=items.DBA;
+		iframe.getElementById('PolicyEffectiveDt').value=items.EffectiveDate;
+		iframe.getElementById('YIB').value=items.YIB;
+		iframe.getElementById('LegalEntity').value=iframe.getElementById('LegalEntity').value="CP";
+		iframe.getElementById('InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd=\'Insured\'].GeneralPartyInfo.NameInfo.TaxIdentity[TaxIdTypeCd=\'FEIN\'].TaxId').value=items.FEIN;
+		iframe.getElementById('insuredEmailAddr').value=items.Email;
+		iframe.getElementById('ExpModCustCA[1]').checked=false;
+
+		adressFill();
+
+		function adressFill(str){
+			var arrLength = items.locations.length;
+			for(var i=0; i<arrLength-1;i++){
+				window.frames['SFOMainFrame'].AddLocationRow();
+			};
+			var str = iframe.getElementById('locationsTable').querySelectorAll("tbody tr");	
+			for(var i=0; i<str.length;i++){
+				var strInput=str[i].querySelectorAll("input");
+				strInput[0].value=items.locations[i].locNum;
+				strInput[1].value=items.locations[i].Street;
+				strInput[2].value=items.locations[i].City;
+				strInput[3].value=items.locations[i].State;
+				strInput[4].value=items.locations[i].Zip;
+			};
+		};
+
+		$("#FillPage").prop({disabled: true});
+
+		var monitor = iframe.querySelectorAll("input");
+		var monitorSelect = iframe.querySelectorAll("select");
+
+			$(monitorSelect[0]).change(function(){   //--- При замене value с сокращенного варианта на полный будет в отслеживании отображаться корректно
+				var legalEntityLength = iframe.getElementById('LegalEntity').length;
+				var newVal= "<span class=\"newVal\">" + iframe.getElementById('LegalEntity').value + "</span>";
+				var oldVal = "\"Legal Entity\" changed: " + "<span class=\"oldVal\">" + items.Entity + "</span>";
+				changeMessageFunc(oldVal, newVal);
+			});
+
+			$(monitor).change(function(){
+				var newVal= "<span class=\"newVal\">" + this.value + "</span>";
+				var oldVal;
+
+				if(this.id == "InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd='Insured'].GeneralPartyInfo.NameInfo.CommlName.CommercialName"){
+					oldVal = "\"Insured name\" changed: " + "<span class=\"oldVal\">" + items.InsuredName + "</span>";
+				};
+				if(this.id == "InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd='Insured'].GeneralPartyInfo.NameInfo.CommlName.SupplementaryNameInfo[SupplementaryNameCd='DBA'].SupplementaryName"){
+					oldVal = "\"Doing Business As\" changed: " + "<span class=\"oldVal\">" + items.DBA + "</span>";
+				};
+				if(this.id == "PolicyEffectiveDt"){
+					oldVal = "\"Effective Date\" changed: " + "<span class=\"oldVal\">" + items.EffectiveDate + "</span>";
+				};
+				if(this.id == "YIB"){
+					oldVal = "\"Years in Business\" changed: " + "<span class=\"oldVal\">" + items.YIB + "</span>";
+				};
+				if(this.id == "InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd='Insured'].GeneralPartyInfo.NameInfo.TaxIdentity[TaxIdTypeCd='FEIN'].TaxId"){
+					oldVal = "\"FEIN\" changed: " + "<span class=\"oldVal\">" + items.FEIN + "</span>";
+				};
+				if(this.id == "insuredEmailAddr"){
+					oldVal = "\"Insured E-Mail\" changed: " + "<span class=\"oldVal\">" + items.Email + "</span>";
+				};
+				for(var i=0;i<items.locations.length;i++){
+					if(this.name == "locationsTable:"+i+":_id76"){
+						oldVal = "\"Location Street #"+(i+1)+"\" changed: " + "<span class=\"oldVal\">" + items.locations[i].Street + "</span>";
+					};
+					if(this.name == "locationsTable:"+i+":_id78"){
+						oldVal = "\"Location City #"+(i+1)+"\" changed: " + "<span class=\"oldVal\">" + items.locations[i].City + "</span>";
+					};
+					if(this.name == "locationsTable:"+i+":_id80"){
+						oldVal = "\"Location State #"+(i+1)+"\" changed: " + "<span class=\"oldVal\">" + items.locations[i].State + "</span>";
+					};
+					if(this.name == "locationsTable:"+i+":_id83"){
+						oldVal = "\"Zip #"+(i+1)+"\" changed: " + "<span class=\"oldVal\">" + items.locations[i].Zip + "</span>";
+					};
+				};
+				changeMessageFunc(oldVal, newVal);
+			});
+		function changeMessageFunc (oldVal, newVal) {
+			var changeMessage = document.getElementById("trackedChanges");
+			changeMessage.innerHTML += oldVal + " to " + newVal + "<br>";
+		};
+	});
+</script>
+</body>
+</html>

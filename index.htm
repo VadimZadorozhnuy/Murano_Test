@@ -74,8 +74,11 @@
 		iframe.getElementById('LegalEntity').value=iframe.getElementById('LegalEntity').value="CP";
 		iframe.getElementById('InsuredOrPrincipal[InsuredOrPrincipalInfo.InsuredOrPrincipalRoleCd=\'Insured\'].GeneralPartyInfo.NameInfo.TaxIdentity[TaxIdTypeCd=\'FEIN\'].TaxId').value=items.FEIN;
 		iframe.getElementById('insuredEmailAddr').value=items.Email;
-		iframe.getElementById('ExpModCustCA[1]').checked=false;
-
+		if(items.ExpMod!=""){
+			iframe.getElementById('ExpModCustCA[0]').checked=true;
+			window.frames['SFOMainFrame'].toggleExpMod();
+			iframe.getElementById('ExperienceModificationCustCA').value=items.ExpMod;
+		}
 		adressFill();
 
 		function adressFill(str){
@@ -93,8 +96,6 @@
 				strInput[4].value=items.locations[i].Zip;
 			};
 		};
-
-		$("#FillPage").prop({disabled: true});
 
 		var monitor = iframe.querySelectorAll("input");
 		var monitorSelect = iframe.querySelectorAll("select");
@@ -128,6 +129,9 @@
 				if(this.id == "insuredEmailAddr"){
 					oldVal = "\"Insured E-Mail\" changed: " + "<span class=\"oldVal\">" + items.Email + "</span>";
 				};
+				if(this.id == "ExperienceModificationCustCA"){
+					oldVal = "\"Experience Modification\" changed: " + "<span class=\"oldVal\">" + items.ExpMod + "</span>";
+				};
 				for(var i=0;i<items.locations.length;i++){
 					if(this.name == "locationsTable:"+i+":_id76"){
 						oldVal = "\"Location Street #"+(i+1)+"\" changed: " + "<span class=\"oldVal\">" + items.locations[i].Street + "</span>";
@@ -144,11 +148,11 @@
 				};
 				changeMessageFunc(oldVal, newVal);
 			});
-		function changeMessageFunc (oldVal, newVal) {
-			var changeMessage = document.getElementById("trackedChanges");
-			changeMessage.innerHTML += oldVal + " to " + newVal + "<br>";
-		};
-	});
+function changeMessageFunc (oldVal, newVal) {
+	var changeMessage = document.getElementById("trackedChanges");
+	changeMessage.innerHTML += oldVal + " to " + newVal + "<br>";
+};
+});
 </script>
 </body>
 </html>
